@@ -1,2 +1,1 @@
-# id2223-project
-Investigating Split Learning and Federate Learning
+# Split Learning and Federated Learning
