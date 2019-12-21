@@ -36,10 +36,9 @@ def parse_args() -> Namespace:
 
     parser.add_argument("-bs", "--batch_size", type=int, default=64)
     parser.add_argument("-tbs", "--test_batch_size", type=int, default=1000)
-    parser.add_argument("-ls", "--log_steps", type=int, default=10)
+    parser.add_argument("-ls", "--log_steps", type=int, default=50)
     parser.add_argument("-lr", "--learning_rate", type=float, default=0.01)
-    parser.add_argument("-e", "--epochs", type=int, default=3)
-    parser.add_argument("-sm", "--save_model", type=bool, default=True)
+    parser.add_argument("-e", "--epochs", type=int, default=25)
 
     return parser.parse_args(argv[1:])
 
@@ -194,7 +193,7 @@ if __name__ == "__main__":
     model = LeNetComplete().to(device)
 
     # Load the optimizer
-    optimizer = optim.SGD(model.parameters(), lr=0.1)
+    optimizer = optim.SGD(model.parameters(), lr=args.learning_rate)
 
     # Train and evaluate for a number of epochs
     total_train_time, test_losses, test_accs = 0.0, [], []
@@ -209,10 +208,12 @@ if __name__ == "__main__":
 
     # Create validation loss and accuracy plots
     epoch_list = list(range(1, args.epochs+1))
-    generate_simple_plot(epoch_list, test_losses, "Test loss",
-            "epoch", "loss", save=False)
-    generate_simple_plot(epoch_list, test_accs, "Test accuracy",
-            "epoch", "accuracy", save=False)
+    generate_simple_plot(epoch_list, test_losses,
+            "Test loss (Federated Learning)", "epoch", "loss", [0.2, 0.9],
+            save=True, fname="test_loss_fl.pdf")
+    generate_simple_plot(epoch_list, test_accs,
+            "Test accuracy (Federated Learning)", "epoch", "accuracy",
+            [0.5, 1.0], save=True, fname="test_acc_fl.pdf")
 
     print("Total training time: {:.2f}s".format(total_train_time))
     print("Final test accuracy: {:.4f}".format(test_acc))

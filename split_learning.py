@@ -51,9 +51,9 @@ def parse_args() -> Namespace:
     parser.add_argument("-bs", "--batch_size", type=int, default=64)
     parser.add_argument("-nb", "--num_batches", type=int, default=938)
     parser.add_argument("-tbs", "--test_batch_size", type=int, default=1000)
-    parser.add_argument("-ls", "--log_steps", type=int, default=20)
+    parser.add_argument("-ls", "--log_steps", type=int, default=50)
     parser.add_argument("-lr", "--learning_rate", type=float, default=0.01)
-    parser.add_argument("-e", "--epochs", type=int, default=3)
+    parser.add_argument("-e", "--epochs", type=int, default=10)
     parser.add_argument("-p", "--plot", type=bool, default=True)
 
     return parser.parse_args(argv[1:])
@@ -346,17 +346,19 @@ elif server:
 
             # Reset variables
             total_n_labels_test, correct_test = 0, 0
-            step, batch_idx =  0, 0
+            step, batch_idx = 0, 0
 
             if msg == "training_complete":
                 print("Training complete.")
 
                 # Create validation loss and accuracy plots
                 epoch_list = list(range(1, args.epochs+1))
-                generate_simple_plot(epoch_list, val_losses, "Test loss",
-                        "epoch", "loss", save=False)
-                generate_simple_plot(epoch_list, val_accs, "Test accuracy",
-                        "epoch", "accuracy", save=False)
+                generate_simple_plot(epoch_list, val_losses,
+                        "Test loss (Split Learning)", "epoch", "loss", [0.9, 0.3],
+                        save=True, fname="test_loss_sl.pdf")
+                generate_simple_plot(epoch_list, val_accs,
+                        "Test accuracy (Split Learning)", "epoch", "accuracy",
+                        [0.65, 1.0], save=True, fname="test_acc_sl.pdf")
 
                 print("Total training time: {:.2f}s".format(total_training_time))
                 print("Final test accuracy: {:.4f}".format(acc))
@@ -364,8 +366,8 @@ elif server:
 
                 exit()
 
-            # Only reset validation loss if trainin not complete
-            val_loss = 0.0,
+            # Only reset validation loss if training not complete
+            val_loss = 0.0
 
         elif msg == "validation":
             # Change phase and reset variables
