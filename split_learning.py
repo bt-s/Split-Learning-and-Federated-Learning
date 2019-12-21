@@ -354,7 +354,7 @@ elif server:
                 # Create validation loss and accuracy plots
                 epoch_list = list(range(1, args.epochs+1))
                 generate_simple_plot(epoch_list, val_losses,
-                        "Test loss (Split Learning)", "epoch", "loss", [0.9, 0.3],
+                        "Test loss (Split Learning)", "epoch", "loss", [0.3, 0.9],
                         save=True, fname="test_loss_sl.pdf")
                 generate_simple_plot(epoch_list, val_accs,
                         "Test accuracy (Split Learning)", "epoch", "accuracy",
