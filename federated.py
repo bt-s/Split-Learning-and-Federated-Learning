@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
-"""main.py Contains an implementation of federated learning with ten workers
-   applied to the Fashion MNIST data set for image classification using a
-   slightly modified version of the LeNet5 CNN architecture.
+"""federated.py Contains an implementation of federated learning with ten
+                workers applied to the Fashion MNIST data set for image
+                classification using a slightly modified version of the LeNet5
+                CNN architecture.
 
 For the ID2223 Scalable Machine Learning course at KTH Royal Institute of
 Technology"""
