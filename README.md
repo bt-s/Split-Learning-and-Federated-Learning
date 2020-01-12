@@ -15,16 +15,25 @@ $ pip install -r requirements.txt
 Some of the code in this repository works with the Messagge Passing Interface (MPI). To be able to run the code, ```openmpi``` or a similar program has to be set up.
 
 ## Usage
+To reproduce the experiments as described in *report.pdf*, do:
+```
+$ ./run_all_exps.sh
+```
+
+To apply the LeNet5 CNN regular model on FashionMNIST, do:
+```
+$ python3.7 src/regular_learning.py
+```
 
 To apply the LeNet5 CNN federated model with 10 workers on FashionMNIST, do:
 ```
-$ python3.7 federated.py
+$ python3.7 src/federated_learning.py
 ```
 
 To apply the LeNet5 CNN split learning model with 10 workers on FashionMNIST, do:
 
 ```
-$ mpirun -n 11 python3.7 split_learning.py
+$ mpirun -n 11 python3.7 src/split_learning.py
 ```
 
 For more information about the split learning and federated learning technologies and the experiments that can be carried out with the code in this repository, we kindly refer to the file *report.pdf*.
