@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
-"""regular.py Contains an implementation of a standard non-distributed CNN
-              architecture applied to the Fashion MNIST data set for image
-              classification using a slightly modified version of the LeNet5
-              CNN architecture.
+"""federated.py Contains an implementation of federated learning with ten
+                workers applied to the Fashion MNIST data set for image
+                classification using a slightly modified version of the LeNet5
+                CNN architecture.
 
 For the ID2223 Scalable Machine Learning course at KTH Royal Institute of
 Technology"""
@@ -21,6 +21,9 @@ from sys import argv
 from time import time
 from argparse import ArgumentParser, Namespace
 
+# The Pysyft Federated Learning library
+import syft as sy
+
 from models import LeNetComplete
 from plotting import generate_simple_plot
 
@@ -36,7 +39,7 @@ def parse_args() -> Namespace:
     parser.add_argument("-tbs", "--test_batch_size", type=int, default=1000)
     parser.add_argument("-ls", "--log_steps", type=int, default=50)
     parser.add_argument("-lr", "--learning_rate", type=float, default=0.01)
-    parser.add_argument("-e", "--epochs", type=int, default=10)
+    parser.add_argument("-e", "--epochs", type=int, default=25)
 
     return parser.parse_args(argv[1:])
 
@@ -58,6 +61,9 @@ def train(args, model, device, train_loader, optimizer, epoch):
     """
     start = time()
     for batch_idx, (data, target) in enumerate(train_loader):
+        # Ensure that thet data is send to the right worker
+        model.send(data.location)
+
         # Write the data and targets to the compute device
         data, target = data.to(device), target.to(device)
 
@@ -76,10 +82,14 @@ def train(args, model, device, train_loader, optimizer, epoch):
         # Apply the optimizer
         optimizer.step()
 
+        # Retrieve the model (PySyft feature)
+        model.get()
+
         if batch_idx % args.log_steps == 0:
             # Retrieve the loss (PySyft feature)
-            print('Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
-                epoch, batch_idx * args.batch_size,
+            loss = loss.get()
+            print(' {} - Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
+                data.location.id, epoch, batch_idx * args.batch_size,
                 len(train_loader) * args.batch_size,
                 100. * batch_idx / len(train_loader), loss.item()))
 
@@ -137,6 +147,24 @@ def test(args, model, device, test_loader, epoch):
 if __name__ == "__main__":
     args = parse_args()
 
+    # Pysyft needs to be hooked to PyTorch to enable its features
+    hook = sy.TorchHook(torch)
+
+    # Define the workers
+    alfa    = sy.VirtualWorker(hook, id="alfa")
+    bravo   = sy.VirtualWorker(hook, id="bravo")
+    charlie = sy.VirtualWorker(hook, id="charlie")
+    delta   = sy.VirtualWorker(hook, id="delta")
+    echo    = sy.VirtualWorker(hook, id="echo")
+    foxtrot = sy.VirtualWorker(hook, id="foxtrot")
+    golf    = sy.VirtualWorker(hook, id="golf")
+    hotel   = sy.VirtualWorker(hook, id="hotel")
+    india   = sy.VirtualWorker(hook, id="india")
+    juliet  = sy.VirtualWorker(hook, id="juliet")
+
+    workers = (alfa, bravo, charlie, delta, echo, foxtrot, golf, hotel, india,
+            juliet)
+
     # Check if a GPU is available
     device = "cuda" if torch.cuda.is_available() else "cpu"
     device = torch.device(device)
@@ -148,21 +176,19 @@ if __name__ == "__main__":
         transforms.Normalize((0.5,), (0.5,))
     ])
 
+    # Federated learning needs a special train loader to distribute the data
+    # over the various workers
     print("Loading data...")
-    train_loader = torch.utils.data.DataLoader(
-            datasets.FashionMNIST('/data', train=True, download=True,
-                transform=transforms.Compose([
-                    transforms.ToTensor(),
-                    transforms.Normalize((0.1307,), (0.3081,))
-                    ])),
-                batch_size=args.batch_size, shuffle=True, **kwargs)
+
+    train_loader = sy.FederatedDataLoader(datasets.FashionMNIST('data',
+        train=True, download=True,
+        transform=data_transformer).federate(workers),
+        batch_size=args.batch_size, shuffle=True, **kwargs)
+
     test_loader = torch.utils.data.DataLoader(
-            datasets.FashionMNIST('/data', train=False,
-                transform=transforms.Compose([
-                    transforms.ToTensor(),
-                    transforms.Normalize((0.1307,), (0.3081,))
-                    ])),
-            batch_size=args.test_batch_size, shuffle=True, **kwargs)
+        datasets.FashionMNIST('data', train=False,
+        transform=data_transformer), batch_size=args.test_batch_size,
+        shuffle=True, **kwargs)
 
     print("Data loaded...")
 
@@ -170,8 +196,7 @@ if __name__ == "__main__":
     model = LeNetComplete().to(device)
 
     # Load the optimizer
-    optimizer = optim.SGD(model.parameters(), lr=args.learning_rate,
-            momentum=0.9, weight_decay=5e-4)
+    optimizer = optim.SGD(model.parameters(), lr=args.learning_rate)
 
     # Train and evaluate for a number of epochs
     total_train_time, test_losses, test_accs = 0.0, [], []
@@ -187,11 +212,11 @@ if __name__ == "__main__":
     # Create validation loss and accuracy plots
     epoch_list = list(range(1, args.epochs+1))
     generate_simple_plot(epoch_list, test_losses,
-            "Test loss (Regular Learning)", "epoch", "loss", [0.2, 0.9],
-            save=True, fname="test_loss_reg.pdf")
+            "Test loss (Federated Learning)", "epoch", "loss", [0.2, 0.9],
+            save=True, fname="test_loss_fl.pdf")
     generate_simple_plot(epoch_list, test_accs,
-            "Test accuracy (Regular Learning)", "epoch", "accuracy",
-            [0.5, 1.0], save=True, fname="test_acc_reg.pdf")
+            "Test accuracy (Federated Learning)", "epoch", "accuracy",
+            [0.5, 1.0], save=True, fname="test_acc_fl.pdf")
 
     print("Total training time: {:.2f}s".format(total_train_time))
     print("Final test accuracy: {:.4f}".format(test_acc))

@@ -34,6 +34,6 @@ def generate_simple_plot(x: List, y: List, title: str="", x_label: str="",
     ax.set(xlabel=x_label, ylabel=y_label, ylim=y_lim, title=title)
 
     if save:
-        fig.savefig("./plots/" + fname)
+        fig.savefig("../plots/" + fname)
     else:
         plt.show()

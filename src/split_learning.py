@@ -115,7 +115,7 @@ if worker:
         # Let the first worker download the data
         if rank == 1:
             # Download the Fashion-MNIST training data set
-            train_set = torchvision.datasets.FashionMNIST(root='data',
+            train_set = torchvision.datasets.FashionMNIST(root='./data',
                     train=True, download=True, transform=data_transformer)
             train_loader = torch.utils.data.DataLoader(train_set,
                     batch_size=args.batch_size, shuffle=True)
