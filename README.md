@@ -1,7 +1,5 @@
 # Split Learning and Federated Learning
 
-As part of a project for the course *Scalable Machine Learning and Deep Learning (ID2223)* at KTH Royal Institute of Technology.
-
 This repository comprises of implementations of Split Learning [Vepakomma et al. 2018] and Federated Learning [McMahan et al. 2016]. The network architecture used for both implementations is a slightly modified version of the LeNet-5 [LeCun et al., 1998] convolutional neural network (CNN) architectures. All experiments are performed on the FashionMNIST data set [Xiao et al. 2018u].
 
 ## Setup
